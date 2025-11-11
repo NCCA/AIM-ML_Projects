@@ -410,7 +410,7 @@ def _(device, features, labels, model_1, np, plt, torch):
     # Detach the tensor from the computational graph and move it back to the CPU for NumPy/Matplotlib compatibility.
     zz = test_preds.reshape(xx.shape).detach().cpu().numpy()
 
-    # Plotting 
+    # Plotting
 
     # Use contourf to fill the decision boundary based on the predictions (zz).
     # alpha=0.2 makes the filled area transparent, allowing data points to be seen.
