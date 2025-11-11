@@ -1,5 +1,5 @@
 ---
-title: Simpleclassificationmarimo
+title: 01Simpleclassification
 marimo-version: 0.17.7
 width: full
 header: |-
