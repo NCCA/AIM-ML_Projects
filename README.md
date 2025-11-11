@@ -45,7 +45,7 @@ We can edit the __init__.py file to add the following
 
 
 ```python
-__version__ = "0.0.5"
+__version__ = "0.0.1"
 
 from .Utils import get_device
 
