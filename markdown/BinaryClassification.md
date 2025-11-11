@@ -1,0 +1,100 @@
+---
+title: Binaryclassification
+marimo-version: 0.17.7
+width: full
+---
+
+```python {.marimo}
+
+```
+
+```python {.marimo}
+import mlutils
+
+print(mlutils.__version__)
+```
+
+```python {.marimo}
+from sklearn.datasets import make_circles
+import numpy as np
+import matplotlib.pyplot as plt
+import torch
+import torch.nn as nn
+import torch.optim as optim
+```
+
+```python {.marimo}
+import marimo as mo
+```
+
+# Data Generation
+
+We will create a dataset of circles in a 2D array. This data set will contains two classes: class 0 (inner circle) and class 1 (outer circle). We will use the `make_circles` function from `sklearn.datasets` to generate this data.
+
+The the ```x``` value is composed of 2 features (the x,y co-ordinate of the point), the y value is the labels (0 or 1) for the points.
+
+```python {.marimo}
+# Data Generation
+n_samples = 1000
+x, y = make_circles(n_samples, noise=0.03, random_state=42)
+print(x.shape, y.shape)
+print(f"A single sample of x is {x[0]}")
+print(y[0:10])
+```
+
+```python {.marimo}
+plt.figure(figsize=(4, 4))
+plt.scatter(x=x[:, 0], y=x[:, 1], c=y, s=2, cmap=plt.cm.plasma)
+```
+
+```python {.marimo}
+# features and labels are what we will feed to the model for training
+
+features = torch.from_numpy(x).type(torch.float)
+y_labels = torch.from_numpy(y).type(torch.float)
+train_split = int(0.8 * len(features))
+
+features_train = features[:train_split]
+features_test = features[train_split:]
+
+y_train = y[:train_split]
+y_test = y[train_split:]
+print(features_train.shape, y_train.shape, features_test.shape, y_test.shape)
+```
+
+```python {.marimo}
+# Now
+device = mlutils.get_device()
+print(device)
+```
+
+```python {.marimo}
+class BinaryClassify(nn.Module):
+    def __init__(self):
+        super().__init__()
+        # Layer 1 has 2 inputs (x,y for the dots) and we will expand this to 5 output (hidden layer)
+        self.layer_1 = nn.Linear(in_features=2, out_features=5)
+        # layer 2 must have the same input as previous layout output
+        # We will have 1 output feature as it's either a 0 or 1
+        self.layer_2 = nn.Linear(in_features=5, out_features=1)
+
+    def forward(self, x):
+        return self.layer_2(self.layer_1(x))
+
+
+model = BinaryClassify().to(device)
+print(model.parameters)
+print(model.state_dict())
+```
+
+```python {.marimo}
+_pred = model(features_test.to(device))
+print(f"Length of predictions {len(_pred)} Shape {_pred.shape}")
+print(f"Length of test samples {len(y_test)} Shape {y_test.shape}")
+print(_pred[:10])
+print(y_test[:10])
+```
+
+```python {.marimo}
+
+```
