@@ -1,5 +1,5 @@
-__version__ = "0.0.1"
+__version__ = "0.0.5"
 
-from .Utils import get_device
+from .Utils import accuracy, get_device, plot_decision_boundary
 
-__all__ = [get_device]
+__all__ = [get_device, plot_decision_boundary, accuracy]
