@@ -11,6 +11,9 @@ dependencies = [
     "matplotlib>=3.10.7",
     "scikit-learn>=1.7.2",
     "ruff>=0.14.4",
+    "requests>=2.32.5",
+    "tqdm>=4.67.1",
+    "torchvision>=0.24.0",
 ]
 
 [tool.marimo.display]
