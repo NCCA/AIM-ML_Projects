@@ -46,6 +46,12 @@ def accuracy(y_true, y_pred):
         return 0.0
 
 
+def get_batch_accuracy(output, y, N):
+    pred = output.argmax(dim=1, keepdim=True)
+    correct = pred.eq(y.view_as(pred)).sum().item()
+    return correct / N
+
+
 def plot_decision_boundary(model: torch.nn.Module, features: torch.Tensor, labels: torch.Tensor, figsize=(4, 4)):
     """Plots the decision boundary for a binary classification model.
 
