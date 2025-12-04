@@ -53,7 +53,6 @@ def _(mlutils, pathlib):
         DATASET_LOCATION="./mnist_asl"
     print(f"using {DATASET_LOCATION}")
     pathlib.Path(DATASET_LOCATION).mkdir(parents=True,exist_ok=True)
-
     return (DATASET_LOCATION,)
 
 
@@ -66,7 +65,6 @@ def _(DATASET_LOCATION, mlutils, pathlib, zipfile):
         mlutils.download(URL,dest)
         with zipfile.ZipFile(dest,"r") as zip_ref :
             zip_ref.extractall(DATASET_LOCATION)
-
 
     return
 
@@ -163,9 +161,19 @@ def _(Dataset, device, images_test, images_train, torch, y_train, y_valid):
 
         def __len__(self) :
             return len(self.xs)
-        
+
+        def save(self,path) :
+            data = {
+                "xs" : self.xs.cpu(),
+                "ys" : self.ys.cpu()
+            }
+            torch.save(data,path)
+
     train_data = ASLDataSet(images_train,y_train)
     valid_data = ASLDataSet(images_test,y_valid)
+
+    train_data.save("train_data.pth")
+    valid_data.save("valid_data.pth")
     return train_data, valid_data
 
 
@@ -174,7 +182,6 @@ def _(DataLoader, train_data, valid_data):
     BATCH_SIZE = 32
     train_loader = DataLoader(train_data,batch_size=BATCH_SIZE,shuffle=True)
     test_loader = DataLoader(valid_data,batch_size=BATCH_SIZE)
-
     return test_loader, train_loader
 
 
@@ -198,7 +205,6 @@ def _(device, input_size, nn, num_classes, torch):
 
     model_compiled=torch.compile(model.to(device))
     model_compiled.to(device)
-
     return (model_compiled,)
 
 
@@ -238,13 +244,58 @@ def _(
         train_accuracy.append(accuracy)
         train_loss.append(loss)
         print(f"Train Loss {loss:.4f} Accuracy {accuracy:.4f}")
-
-    return (train,)
+    return train, train_accuracy, train_loss, valid_N
 
 
 @app.cell
-def _(train):
-    train()
+def _(loss_function, mlutils, model_compiled, test_loader, torch, valid_N):
+    valid_accuracy = []
+    valid_loss = []
+
+    def validate() :
+        loss = 0
+        accuracy =0
+        model_compiled.eval()
+        with torch.no_grad() :
+            for x,y in test_loader :
+                output = model_compiled(x)
+                loss += loss_function(output,y).item()
+                accuracy += mlutils.get_batch_accuracy(output,y,valid_N)
+        valid_accuracy.append(accuracy)
+        valid_loss.append(loss)
+        print(f"Valid Loss {loss:.4f}  Accuracy {accuracy:.4f}")
+
+    return valid_accuracy, valid_loss, validate
+
+
+@app.cell
+def _(train, validate):
+    epochs = 10
+    for epoch in range(epochs) :
+        print(f"{epoch=}")
+        train()
+        validate()
+    return
+
+
+@app.cell
+def _(plt, train_accuracy, train_loss, valid_accuracy, valid_loss):
+    plt.figure(figsize=(5,2))
+    plt.plot(train_accuracy, label="Train")
+    plt.plot(valid_accuracy, label="Valid")
+    plt.xlabel("Epoch")
+    plt.title("Accuracy")
+    plt.legend()
+    plt.show()
+
+    plt.figure(figsize=(5,2))
+    plt.plot(train_loss, label="Train")
+    plt.plot(valid_loss, label="Valid")
+    plt.xlabel("Epoch")
+    plt.title("Loss")
+    plt.legend()
+    plt.show()
+
     return
 
 

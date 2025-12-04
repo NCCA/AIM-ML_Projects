@@ -52,6 +52,46 @@ def get_batch_accuracy(output, y, N):
     return correct / N
 
 
+def train(model, dataloader, optimizer, loss_fn, device, N):
+    """
+    model is the model we are training.
+    dataloader is the data set of labels and features.
+    optimizer is the optimizer function.
+    loss is the loss functions.
+    device the active device to use.
+    N the number of items to uses in training.
+    """
+    model.train()
+    running_loss = 0.0
+    accuracy = 0.0
+    for x, y in dataloader:
+        x = x.to(device)
+        y = y.to(device)
+        optimizer.zero_grad()
+        preds = model(x)
+        loss = loss_fn(preds, y)
+        loss.backward()
+        optimizer.step()
+        running_loss += loss.item() * x.size(0)
+        accuracy += get_batch_accuracy(preds, y, N)
+    return running_loss / N, accuracy
+
+
+@torch.no_grad()
+def validate(model, dataloader, loss_fn, device, N):
+    model.eval()
+    running_loss = 0.0
+    accuracy = 0.0
+    for x, y in dataloader:
+        x = x.to(device)
+        y = y.to(device)
+        preds = model(x)
+        loss = loss_fn(preds, y)
+        running_loss += loss.item() * x.size(0)
+        accuracy += get_batch_accuracy(preds, y, N)
+    return running_loss / N, accuracy
+
+
 def plot_decision_boundary(model: torch.nn.Module, features: torch.Tensor, labels: torch.Tensor, figsize=(4, 4)):
     """Plots the decision boundary for a binary classification model.
 
